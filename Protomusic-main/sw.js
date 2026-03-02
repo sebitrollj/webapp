@@ -1,16 +1,14 @@
 // ProtoMusic Service Worker
-const CACHE_NAME = 'protomusic-v1.4.5';
+const CACHE_NAME = 'protomusic-v1.4.7';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
     '/styles/main.css',
     '/styles/player.css',
-    '/styles/floating-player.css',
     '/styles/kalandar.css',
     '/js/api.js',
     '/js/app.js',
     '/js/player.js',
-    '/js/floating-player.js',
     '/js/color-extractor.js',
     '/js/settings.js'
 ];

@@ -24,7 +24,7 @@ class ProtoMusicPlayer {
         this.discordEnabled = localStorage.getItem('protomusic_discord_rpc') !== 'false';
 
         // Floating Mini Player
-        this.floatingPlayer = null;
+
 
         this.initElements();
         this.initEvents();
@@ -836,28 +836,11 @@ class ProtoMusicPlayer {
             } catch (error) {
                 console.error('❌ Error opening Electron mini player:', error);
                 alert('Erreur : ' + error.message);
-                // Fallback to in-browser widget
-                this.openInBrowserWidget();
             }
         } else {
-            console.log('🎵 ⚠️ Not in Electron - using in-page widget');
-            this.openInBrowserWidget();
+            console.log('🎵 ⚠️ Not in Electron - mini player only available in desktop app');
+            alert('Le mini lecteur est uniquement disponible sur l\'application bureau.');
         }
-    }
-
-    openInBrowserWidget() {
-        console.log('🎵 FloatingPlayer class exists?', typeof FloatingPlayer);
-
-        // Initialize floating player if not already created
-        if (!this.floatingPlayer) {
-            console.log('🎵 Creating new FloatingPlayer instance');
-            this.floatingPlayer = new FloatingPlayer(this);
-        } else {
-            console.log('🎵 FloatingPlayer already exists');
-        }
-
-        console.log('🎵 Calling show()');
-        this.floatingPlayer.show();
     }
 
     showLoading() {

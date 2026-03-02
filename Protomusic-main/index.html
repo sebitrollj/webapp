@@ -23,7 +23,6 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/floating-player.css">
     <link rel="stylesheet" href="styles/kalandar.css">
     <link rel="stylesheet" href="styles/mobile.css">
 </head>
@@ -890,51 +889,6 @@
         </div>
     </div>
 
-    <!-- Floating Mini Player Widget -->
-    <div id="floatingPlayer" class="floating-player hidden">
-        <div class="floating-player-header" id="floatingPlayerHeader">
-            <div class="floating-player-info">
-                <span class="floating-player-title" id="floatingTitle">Titre</span>
-                <span class="floating-player-artist" id="floatingArtist">Artiste</span>
-            </div>
-            <div class="floating-player-actions">
-                <button class="floating-action-btn" id="expandFloatingBtn" title="Agrandir">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
-                    </svg>
-                </button>
-                <button class="floating-action-btn" id="closeFloatingBtn" title="Fermer">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <div class="floating-player-video">
-            <video id="floatingVideoPlayer" playsinline></video>
-        </div>
-        <div class="floating-player-controls">
-            <button class="floating-control-btn" id="floatingPrevBtn">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
-                </svg>
-            </button>
-            <button class="floating-control-btn" id="floatingPlayPauseBtn">
-                <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7z" />
-                </svg>
-                <svg class="pause-icon hidden" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                </svg>
-            </button>
-            <button class="floating-control-btn" id="floatingNextBtn">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
-                </svg>
-            </button>
-        </div>
-    </div>
 
 
     <!-- Bottom Navigation (Mobile) -->
@@ -972,7 +926,6 @@
     <script src="js/discord-helper.js"></script>
     <script src="js/image-retry.js"></script>
     <script src="js/api.js"></script>
-    <script src="js/floating-player.js"></script>
     <script src="js/player.js"></script>
     <script src="js/app.js"></script>
     <script src="js/settings.js"></script>
