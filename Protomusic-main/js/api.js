@@ -156,6 +156,10 @@ class ProtoMusicAPI {
         return `${this.baseUrl}/webapi/media/thumb/${videoId}`;
     }
 
+    getHighResThumbnailUrl(videoId) {
+        return `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+    }
+
     getStreamUrl(videoId) {
         return `${this.baseUrl}/webapi/media/stream/${videoId}/master.m3u8`;
     }
