@@ -1,5 +1,5 @@
 // ProtoMusic Service Worker
-const CACHE_NAME = 'protomusic-v1.5.3';
+const CACHE_NAME = 'protomusic-v1.5.4';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
