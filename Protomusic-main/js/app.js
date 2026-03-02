@@ -733,8 +733,16 @@ class ProtoMusicApp {
                     kalandarHeader.style.display = hasKalandar ? 'block' : 'none';
                 }
                 if (kalandarGrid) {
-                    // Force explicit 'grid' — setting '' reverts to CSS which may be 'none'
-                    kalandarGrid.style.display = hasKalandar ? 'grid' : 'none';
+                    // Reset display to grid (or whatever CSS defines) if we have items
+                    // otherwise hide it
+                    kalandarGrid.style.display = hasKalandar ? '' : 'none';
+                    if (hasKalandar && getComputedStyle(kalandarGrid).display === 'none') {
+                        // Fallback if class doesn't apply for some reason, though it should.
+                        // But since we set it to 'none' in loadSeasonEpisodes which is inline style,
+                        // setting it to '' should revert to CSS class 'display: grid'.
+                        // Let's force it just in case inline style persists.
+                        kalandarGrid.style.removeProperty('display');
+                    }
                 }
             } else {
                 grid.innerHTML = `

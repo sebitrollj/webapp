@@ -79,13 +79,20 @@ class ProtoMusicAPI {
             const data = await response.json();
 
             if (data && data.success && data.seasons && data.seasons.length > 0) {
+                const seriesList = data.seasons.map(season => ({
+                    series_id: season.series_id,
+                    season_name: season.season_name,
+                    episode_count: season.episode_count || 0
+                }));
+
+                // Ensure Kalandar is always available in the UI even if the API seasons list doesn't include it
+                if (!seriesList.some(s => s.series_id === 'kalandar')) {
+                    seriesList.push({ series_id: 'kalandar', season_name: 'Kalandar', episode_count: 25 });
+                }
+
                 return {
                     success: true,
-                    series: data.seasons.map(season => ({
-                        series_id: season.series_id,
-                        season_name: season.season_name,
-                        episode_count: season.episode_count || 0
-                    }))
+                    series: seriesList
                 };
             }
 
