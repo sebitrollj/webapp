@@ -3968,3 +3968,26 @@ body.theme-light {
     font-size: 0.88rem;
     padding: 20px;
 }
+/* Video thumbnail cover (when videoMode is off) */
+.video-thumb-cover {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+.video-thumb-cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(2px);
+}
+.video-container {
+    position: relative;
+}
+

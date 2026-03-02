@@ -810,16 +810,57 @@ class ProtoMusicPlayer {
     showFullPlayer() {
         this.fullPlayerOverlay?.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+
+        // Apply video mode setting: show video or thumbnail-only
+        this._applyVideoMode();
+    }
+
+    _applyVideoMode() {
+        try {
+            const settings = JSON.parse(localStorage.getItem('protomusic_settings') || '{}');
+            const showVideo = settings.videoMode !== false; // default true
+
+            const videoEl = document.getElementById('videoPlayer');
+            const videoContainer = document.querySelector('.video-container');
+            if (!videoContainer) return;
+
+            // Remove existing thumbnail cover if any
+            let cover = videoContainer.querySelector('.video-thumb-cover');
+
+            if (!showVideo) {
+                // Pause video playback and free data: keep audio via Web Audio, hide video
+                if (videoEl) {
+                    videoEl.style.display = 'none';
+                    // Mute video track only (audio still plays via audio context / normal)
+                }
+
+                // Show thumbnail cover
+                if (!cover) {
+                    cover = document.createElement('div');
+                    cover.className = 'video-thumb-cover';
+                    videoContainer.appendChild(cover);
+                }
+                const thumbUrl = this.currentVideo ? api.getThumbnailUrl(this.currentVideo.video_id) : '';
+                cover.style.backgroundImage = `url("${thumbUrl}")`;
+                cover.style.display = 'flex';
+            } else {
+                // Show video normally
+                if (videoEl) videoEl.style.display = '';
+                if (cover) cover.style.display = 'none';
+            }
+        } catch (e) {
+            console.warn('videoMode apply failed:', e);
+        }
     }
 
     hideFullPlayer() {
         this.fullPlayerOverlay?.classList.add('hidden');
         document.body.style.overflow = '';
-    }
-
-    showFullPlayer() {
-        this.fullPlayerOverlay?.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
+        // Always restore video visibility when closing full player
+        const videoEl = document.getElementById('videoPlayer');
+        if (videoEl) videoEl.style.display = '';
+        const cover = document.querySelector('.video-thumb-cover');
+        if (cover) cover.style.display = 'none';
     }
 
     minimize() {

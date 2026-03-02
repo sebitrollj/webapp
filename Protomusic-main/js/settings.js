@@ -21,6 +21,7 @@ class SettingsManager {
             ambientBackground: false,
             visualizer: false,
             autoplay: true,
+            videoMode: true,
             maxQueueSize: 50,
             skipSeason8Intro: false,
             bassBoost: 0
@@ -202,7 +203,8 @@ class SettingsManager {
             'auroraToggle': 'aurora',
             'ambientModeToggle': 'ambientBackground',
             'visualizerToggle': 'visualizer',
-            'autoplayToggle': 'autoplay'
+            'autoplayToggle': 'autoplay',
+            'videoModeToggle': 'videoMode'
         };
 
         Object.entries(toggleMap).forEach(([id, setting]) => {
