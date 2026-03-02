@@ -2251,9 +2251,9 @@ body.ambient-mode .full-player {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: var(--bg-hover);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary, #b30000) 100%);
+    border: none;
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3968,6 +3968,7 @@ body.theme-light {
     font-size: 0.88rem;
     padding: 20px;
 }
+
 /* Video thumbnail cover (when videoMode is off) */
 .video-thumb-cover {
     position: absolute;
@@ -3980,14 +3981,15 @@ body.theme-light {
     justify-content: center;
     z-index: 1;
 }
+
 .video-thumb-cover::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.35);
+    background: rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(2px);
 }
+
 .video-container {
     position: relative;
 }
-
