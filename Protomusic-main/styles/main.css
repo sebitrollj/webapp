@@ -581,6 +581,29 @@ body {
         /* Same as default on mobile */
         gap: 6px;
     }
+
+    /* Featured card : ratio 16:9 adaptatif au lieu de hauteur fixe */
+    .featured-card {
+        height: auto;
+        aspect-ratio: 16 / 9;
+    }
+
+    .featured-overlay {
+        padding: 16px;
+    }
+
+    .featured-title {
+        font-size: 1.3rem;
+    }
+
+    .featured-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .play-featured-btn {
+        padding: 10px 24px;
+        font-size: 0.9rem;
+    }
 }
 
 @media (max-width: 480px) {
