@@ -604,6 +604,28 @@ body {
         padding: 10px 24px;
         font-size: 0.9rem;
     }
+
+    /* ── Désactiver la sélection de texte et le callout natif sur mobile ── */
+    .video-card,
+    .season-card,
+    .featured-card,
+    .mini-player,
+    .bottom-nav,
+    .sidebar,
+    .queue-item,
+    .queue-panel {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
+
+    /* Empêche le surlignage lors du long-press sur tout le contenu principal */
+    .page-container,
+    .main-content {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
 }
 
 @media (max-width: 480px) {

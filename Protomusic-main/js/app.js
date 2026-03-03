@@ -1098,9 +1098,42 @@ class ProtoMusicApp {
             }
         });
 
-        // Right-click context menu
+        // Right-click (desktop) and long-press (mobile) context menu
+        let longPressTimer = null;
+        let longPressTriggered = false;
+
         card.addEventListener('contextmenu', (e) => {
             this.showContextMenu(e, video);
+        });
+
+        card.addEventListener('touchstart', (e) => {
+            longPressTriggered = false;
+            const touch = e.touches[0];
+            longPressTimer = setTimeout(() => {
+                longPressTriggered = true;
+                // Trigger haptic feedback if available
+                if (navigator.vibrate) navigator.vibrate(40);
+                // Build a fake event with touch coordinates
+                const fakeEvent = {
+                    preventDefault: () => { },
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                };
+                this.showContextMenu(fakeEvent, video);
+            }, 500);
+        }, { passive: true });
+
+        card.addEventListener('touchmove', () => {
+            clearTimeout(longPressTimer);
+        }, { passive: true });
+
+        card.addEventListener('touchend', (e) => {
+            clearTimeout(longPressTimer);
+            // If long press was triggered, cancel the normal tap/click
+            if (longPressTriggered) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
         });
 
         // Setup image retry for thumbnail
