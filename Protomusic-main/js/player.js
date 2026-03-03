@@ -360,12 +360,24 @@ class ProtoMusicPlayer {
     updateNowPlaying() {
         if (!this.currentVideo) return;
 
-        const { title, owner_name, thumbnail, video_id } = this.currentVideo;
-        // Always use proxy for thumbnails
-        const thumbnailUrl = api.getThumbnailUrl(video_id);
+        const { title, owner_name, video_id } = this.currentVideo;
+        // Resolve thumbnail with fallback logic
+        const proxyThumbUrl = api.getThumbnailUrl(video_id);
+        const resolvedThumbUrl = this._resolveThumbnailUrl(this.currentVideo);
 
-        // Mini player
-        if (this.miniThumbnail) this.miniThumbnail.src = thumbnailUrl;
+        // Mini player thumbnail with fallback
+        if (this.miniThumbnail) {
+            this.miniThumbnail.src = resolvedThumbUrl;
+            this.miniThumbnail.onerror = () => {
+                if (this.miniThumbnail.src !== proxyThumbUrl) {
+                    this.miniThumbnail.src = proxyThumbUrl;
+                } else {
+                    this.miniThumbnail.onerror = null;
+                    this.miniThumbnail.style.display = 'none';
+                }
+            };
+            this.miniThumbnail.style.display = '';
+        }
         if (this.miniTitle) {
             this.miniTitle.textContent = title;
 
@@ -394,9 +406,24 @@ class ProtoMusicPlayer {
         this.updateFullPlayerFavoriteUI();
         this.updateMiniFavoriteUI();
 
-        // TESTING: Force ambient background (always on)
-        console.log('🎨 TESTING: Forcing ambient background');
-        this.applyAmbientBackground(thumbnailUrl);
+        // Apply ambient background
+        this.applyAmbientBackground(proxyThumbUrl);
+    }
+
+    // Resolve thumbnail URL: custom → proxy fallback
+    _resolveThumbnailUrl(video) {
+        const baseUrl = (window.api && window.api.baseUrl) || 'https://protomusic-proxy.onrender.com';
+        const proxyUrl = api.getThumbnailUrl(video.video_id);
+
+        if (video.thumbnail && video.thumbnail.trim() !== '') {
+            if (video.thumbnail.startsWith('http')) {
+                return video.thumbnail;
+            } else {
+                const path = video.thumbnail.startsWith('/') ? video.thumbnail : '/' + video.thumbnail;
+                return `${baseUrl}${path}`;
+            }
+        }
+        return proxyUrl;
     }
 
     async applyAmbientBackground(imageUrl) {
@@ -755,11 +782,8 @@ class ProtoMusicPlayer {
             let cover = videoContainer.querySelector('.video-thumb-cover');
 
             if (!showVideo) {
-                // Pause video playback and free data: keep audio via Web Audio, hide video
-                if (videoEl) {
-                    videoEl.style.display = 'none';
-                    // Mute video track only (audio still plays via audio context / normal)
-                }
+                // Hide video element
+                if (videoEl) videoEl.style.display = 'none';
 
                 // Show thumbnail cover
                 if (!cover) {
@@ -767,9 +791,34 @@ class ProtoMusicPlayer {
                     cover.className = 'video-thumb-cover';
                     videoContainer.appendChild(cover);
                 }
-                const thumbUrl = this.currentVideo ? (this.currentVideo.thumbnail || api.getThumbnailUrl(this.currentVideo.video_id)) : '';
-                cover.style.backgroundImage = `url("${thumbUrl}")`;
-                cover.style.display = 'flex';
+
+                // Resolve thumbnail with fallback
+                const resolvedThumb = this.currentVideo ? this._resolveThumbnailUrl(this.currentVideo) : '';
+                const proxyThumb = this.currentVideo ? api.getThumbnailUrl(this.currentVideo.video_id) : '';
+
+                // Apply styles for album art display
+                Object.assign(cover.style, {
+                    display: 'flex',
+                    backgroundImage: `url("${resolvedThumb}")`,
+                    backgroundSize: 'contain',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'center',
+                    backgroundColor: '#0a0a0a',
+                    position: 'absolute',
+                    inset: '0',
+                    borderRadius: '12px',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                });
+
+                // Fallback: if custom thumb fails, try proxy
+                if (resolvedThumb && resolvedThumb !== proxyThumb) {
+                    const img = new Image();
+                    img.onerror = () => {
+                        cover.style.backgroundImage = `url("${proxyThumb}")`;
+                    };
+                    img.src = resolvedThumb;
+                }
             } else {
                 // Show video normally
                 if (videoEl) videoEl.style.display = '';
