@@ -3,8 +3,8 @@
  * Using Render proxy to avoid CORS
  */
 
-const API_BASE = 'https://music.sebitroll.net';
-const API_XHR = '/api/v1';
+const API_BASE = 'https://protomusic-proxy.onrender.com';
+const API_XHR = '/api';
 
 class ProtoMusicAPI {
     constructor() {
