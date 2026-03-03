@@ -444,13 +444,34 @@ class ProtoMusicApp {
 
         // Always use proxy for thumbnails
         const thumbnailUrl = api.getThumbnailUrl(video.video_id);
+        // Determine custom thumbnail if available
+        let customThumbUrl = null;
+        if (video.thumbnail && video.thumbnail.trim() !== '') {
+            if (video.thumbnail.startsWith('http')) {
+                customThumbUrl = video.thumbnail;
+            } else {
+                const baseUrl = (window.api && window.api.baseUrl) || 'https://protomusic-proxy.onrender.com';
+                const path = video.thumbnail.startsWith('/') ? video.thumbnail : '/' + video.thumbnail;
+                customThumbUrl = `${baseUrl}${path}`;
+            }
+        }
+        const displayThumb = customThumbUrl || thumbnailUrl;
 
         if (thumbnail) {
-            thumbnail.style.backgroundImage = `url(${thumbnailUrl})`;
+            thumbnail.style.backgroundImage = `url(${displayThumb})`;
             thumbnail.classList.remove('skeleton');
+            // If custom thumb fails, fallback to proxy thumb
+            if (customThumbUrl) {
+                const testImg = new Image();
+                testImg.onerror = () => {
+                    thumbnail.style.backgroundImage = `url(${thumbnailUrl})`;
+                    if (window.imageRetry) imageRetry.setupBackgroundRetry(thumbnail, thumbnailUrl);
+                };
+                testImg.src = customThumbUrl;
+            }
             // Setup retry for background image
             if (window.imageRetry) {
-                imageRetry.setupBackgroundRetry(thumbnail, thumbnailUrl);
+                imageRetry.setupBackgroundRetry(thumbnail, displayThumb);
             }
         }
         if (title) {
@@ -936,7 +957,20 @@ class ProtoMusicApp {
 
         card.innerHTML = `
             <div class="video-thumbnail">
-                <img src="${thumbnailUrl}" alt="" loading="lazy" onerror="this.src='assets/placeholder.jpg'">
+                <img src="${thumbnailUrl}" alt="" loading="lazy"
+                    data-fallback-url="${api.getThumbnailUrl(video.video_id)}"
+                    data-original-url="${thumbnailUrl}"
+                    onerror="
+                        const fb = this.getAttribute('data-fallback-url');
+                        const orig = this.getAttribute('data-original-url');
+                        if (fb && this.src !== fb) {
+                            this.src = fb;
+                        } else {
+                            this.onerror=null;
+                            this.style.display='none';
+                            this.parentElement.style.background='linear-gradient(135deg,#1a1a2e,#16213e)';
+                        }
+                    ">
                 <div class="video-duration">${duration}</div>
                 <div class="video-play-overlay">
                     <svg viewBox="0 0 24 24" fill="currentColor">
