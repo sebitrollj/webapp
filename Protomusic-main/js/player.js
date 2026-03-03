@@ -968,10 +968,11 @@ class ProtoMusicPlayer {
     }
 
     toggleFullPlayerFavorite() {
-        if (!this.currentVideo || !window.app) return;
+        const appRef = window.app;
+        if (!this.currentVideo || !appRef) return;
 
-        app.toggleFavorite(this.currentVideo);
-        const isFavorite = app.favorites.has(this.currentVideo.video_id);
+        appRef.toggleFavorite(this.currentVideo);
+        const isFavorite = appRef.favorites.has(this.currentVideo.video_id);
 
         // Update button state
         this.fullFavoriteBtn?.classList.toggle('active', isFavorite);
@@ -990,9 +991,10 @@ class ProtoMusicPlayer {
     }
 
     toggleMiniFavorite() {
-        if (!this.currentVideo || !window.app) return;
+        const appRef = window.app;
+        if (!this.currentVideo || !appRef) return;
 
-        app.toggleFavorite(this.currentVideo);
+        appRef.toggleFavorite(this.currentVideo);
         this.updateMiniFavoriteUI();
 
         // Also update full player button if visible
@@ -1000,9 +1002,10 @@ class ProtoMusicPlayer {
     }
 
     updateMiniFavoriteUI() {
-        if (!this.currentVideo || !window.app) return;
+        const appRef = window.app;
+        if (!this.currentVideo || !appRef) return;
 
-        const isFavorite = app.favorites.has(this.currentVideo.video_id);
+        const isFavorite = appRef.favorites.has(this.currentVideo.video_id);
 
         // Update button state
         this.miniFavoriteBtn?.classList.toggle('active', isFavorite);
@@ -1015,9 +1018,10 @@ class ProtoMusicPlayer {
     }
 
     updateFullPlayerFavoriteUI() {
-        if (!this.currentVideo || !window.app) return;
+        const appRef = window.app;
+        if (!this.currentVideo || !appRef) return;
 
-        const isFavorite = app.favorites.has(this.currentVideo.video_id);
+        const isFavorite = appRef.favorites.has(this.currentVideo.video_id);
 
         // Update button state
         this.fullFavoriteBtn?.classList.toggle('active', isFavorite);
