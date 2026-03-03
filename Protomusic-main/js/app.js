@@ -1670,4 +1670,5 @@ class ProtoMusicApp {
 let app;
 document.addEventListener('DOMContentLoaded', () => {
     app = new ProtoMusicApp();
+    window.app = app;
 });
