@@ -147,25 +147,65 @@ class SwipeManager {
         const fullPlayer = document.getElementById('fullPlayerOverlay');
         if (!fullPlayer) return;
 
-        this._onSwipe(fullPlayer, (dir) => {
-            const p = this._getPlayer();
-            if (!p) return;
+        // Use local state (not shared this.startX/Y) to avoid interference
+        let sx = 0, sy = 0, st = 0, tracking = false;
 
-            switch (dir) {
-                case 'down':
-                    // Close full player
-                    p.hideFullPlayer && p.hideFullPlayer();
-                    this._feedback('⬇️ Lecteur fermé');
-                    break;
-                case 'left':
-                    p.next && p.next();
-                    this._feedback('⏭ Suivant');
-                    break;
-                case 'right':
-                    p.previous && p.previous();
-                    this._feedback('⏮ Précédent');
-                    break;
+        const DISMISS_MIN_Y = 60;    // px down to trigger dismiss
+        const DISMISS_MAX_X = 120;   // px horizontal tolerance
+        const DISMISS_MAX_MS = 900;  // ms - generous for slow swipes
+
+        const onStart = (e) => {
+            const t = e.touches[0];
+            sx = t.clientX;
+            sy = t.clientY;
+            st = Date.now();
+            tracking = true;
+        };
+
+        const onEnd = (e) => {
+            if (!tracking) return;
+            tracking = false;
+            const t = e.changedTouches[0];
+            const dx = t.clientX - sx;
+            const dy = t.clientY - sy;
+            const dt = Date.now() - st;
+
+            if (dt > DISMISS_MAX_MS) return;
+            if (Math.abs(dx) > DISMISS_MAX_X) return;
+
+            // Also handle left/right track change anywhere on the player
+            if (Math.abs(dx) >= this.MIN_DISTANCE && Math.abs(dy) < this.MAX_PERPENDICULAR) {
+                const p = this._getPlayer();
+                if (!p) return;
+                if (dx < 0) { p.next && p.next(); this._feedback('⏭ Suivant'); }
+                else { p.previous && p.previous(); this._feedback('⏮ Précédent'); }
+                return;
             }
+
+            // Dismiss: swipe down
+            if (dy >= DISMISS_MIN_Y && Math.abs(dx) < DISMISS_MAX_X) {
+                const p = this._getPlayer();
+                p && p.hideFullPlayer && p.hideFullPlayer();
+            }
+        };
+
+        // Register on elements that don't have conflicting touch handling:
+        // 1. The drag handle (top)
+        // 2. The full player info zone (title, artist, fav button)
+        // 3. The video/album art container
+        const safeZones = [
+            document.getElementById('fullDragHandle'),
+            document.querySelector('.full-player-header'),
+            document.querySelector('.full-player-info'),
+            document.querySelector('.video-container'),
+        ].filter(Boolean);
+
+        // If no safe zones found yet (DOM not ready), fall back to full overlay
+        const targets = safeZones.length > 0 ? safeZones : [fullPlayer];
+
+        targets.forEach(el => {
+            el.addEventListener('touchstart', onStart, { passive: true });
+            el.addEventListener('touchend', onEnd, { passive: true });
         });
     }
 
