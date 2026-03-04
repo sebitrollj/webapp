@@ -192,6 +192,10 @@ class SwipeManager {
             panel.style.transform = `translateY(${dy}px) scale(${scale})`;
             panel.style.opacity = opacity;
             panel.style.borderRadius = `${Math.min(dy * 0.08, 24)}px`;
+
+            // Also fade the overlay background
+            const bgAlpha = Math.max(0, 1 - progress * 1.4);
+            overlay.style.backgroundColor = `rgba(0,0,0,${bgAlpha})`;
         };
 
         const onEnd = (e) => {
@@ -214,25 +218,30 @@ class SwipeManager {
 
             if (!panel) return;
             panel.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1), opacity 0.3s ease, border-radius 0.3s ease';
+            overlay.style.transition = 'background-color 0.3s ease';
 
             if (currentDy >= THRESHOLD()) {
-                // Dismiss — animate off screen then close
+                // Dismiss — animate panel off screen + fade overlay to transparent
                 panel.style.transform = `translateY(${window.innerHeight}px) scale(0.9)`;
                 panel.style.opacity = '0';
+                overlay.style.backgroundColor = 'rgba(0,0,0,0)';
                 setTimeout(() => {
                     const p = this._getPlayer();
                     p?.hideFullPlayer?.();
-                    // Reset panel styles for next open
+                    // Reset all styles for next open
                     panel.style.transform = '';
                     panel.style.opacity = '';
                     panel.style.borderRadius = '';
                     panel.style.transition = '';
+                    overlay.style.backgroundColor = '';
+                    overlay.style.transition = '';
                 }, 320);
             } else {
-                // Snap back
+                // Snap back — restore overlay background
                 panel.style.transform = '';
                 panel.style.opacity = '';
                 panel.style.borderRadius = '';
+                overlay.style.backgroundColor = '';
             }
 
             dragging = false;
