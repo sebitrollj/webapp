@@ -141,72 +141,108 @@ class SwipeManager {
         });
     }
 
-    /* ─── Full Player swipe ─── */
+    /* ─── Full Player swipe (drag-to-dismiss) ─── */
 
     _setupFullPlayer() {
-        const fullPlayer = document.getElementById('fullPlayerOverlay');
-        if (!fullPlayer) return;
+        const overlay = document.getElementById('fullPlayerOverlay');
+        if (!overlay) return;
 
-        // Use local state (not shared this.startX/Y) to avoid interference
-        let sx = 0, sy = 0, st = 0, tracking = false;
+        // We animate the inner .full-player panel, not the overlay itself
+        const getPanel = () => overlay.querySelector('.full-player');
 
-        const DISMISS_MIN_Y = 60;    // px down to trigger dismiss
-        const DISMISS_MAX_X = 120;   // px horizontal tolerance
-        const DISMISS_MAX_MS = 900;  // ms - generous for slow swipes
+        let startY = 0, startX = 0;
+        let dragging = false;
+        let currentDy = 0;
+
+        const THRESHOLD = () => window.innerHeight * 0.22; // 22% screen height to dismiss
 
         const onStart = (e) => {
-            const t = e.touches[0];
-            sx = t.clientX;
-            sy = t.clientY;
-            st = Date.now();
-            tracking = true;
+            // Only intercept if full player is visible
+            if (overlay.classList.contains('hidden')) return;
+            startY = e.touches[0].clientY;
+            startX = e.touches[0].clientX;
+            dragging = false;
+            currentDy = 0;
+            const panel = getPanel();
+            if (panel) panel.style.transition = 'none';
+        };
+
+        const onMove = (e) => {
+            if (overlay.classList.contains('hidden')) return;
+            const dy = e.touches[0].clientY - startY;
+            const dx = e.touches[0].clientX - startX;
+
+            // If horizontal movement dominates, ignore (let track-change swipes pass)
+            if (!dragging && Math.abs(dx) > Math.abs(dy) + 10) return;
+
+            // Only respond to downward drag
+            if (dy <= 0) return;
+
+            dragging = true;
+            currentDy = dy;
+
+            const panel = getPanel();
+            if (!panel) return;
+
+            // Real-time transform: translate + scale-down as you drag
+            const progress = Math.min(dy / (window.innerHeight * 0.5), 1);
+            const scale = 1 - progress * 0.12;
+            const opacity = Math.max(0.25, 1 - progress * 0.85);
+
+            panel.style.transform = `translateY(${dy}px) scale(${scale})`;
+            panel.style.opacity = opacity;
+            panel.style.borderRadius = `${Math.min(dy * 0.08, 24)}px`;
         };
 
         const onEnd = (e) => {
-            if (!tracking) return;
-            tracking = false;
-            const t = e.changedTouches[0];
-            const dx = t.clientX - sx;
-            const dy = t.clientY - sy;
-            const dt = Date.now() - st;
+            if (overlay.classList.contains('hidden')) return;
+            if (!dragging && currentDy === 0) return;
 
-            if (dt > DISMISS_MAX_MS) return;
-            if (Math.abs(dx) > DISMISS_MAX_X) return;
+            const dy = e.changedTouches[0].clientY - startY;
+            const dx = e.changedTouches[0].clientX - startX;
+            const panel = getPanel();
 
-            // Also handle left/right track change anywhere on the player
-            if (Math.abs(dx) >= this.MIN_DISTANCE && Math.abs(dy) < this.MAX_PERPENDICULAR) {
+            // Handle horizontal track-change swipes (not a downward drag)
+            if (!dragging && Math.abs(dx) >= this.MIN_DISTANCE && Math.abs(dy) < this.MAX_PERPENDICULAR) {
                 const p = this._getPlayer();
-                if (!p) return;
-                if (dx < 0) { p.next && p.next(); this._feedback('⏭ Suivant'); }
-                else { p.previous && p.previous(); this._feedback('⏮ Précédent'); }
+                if (p) {
+                    if (dx < 0) { p.next?.(); this._feedback('⏭ Suivant'); }
+                    else { p.previous?.(); this._feedback('⏮ Précédent'); }
+                }
                 return;
             }
 
-            // Dismiss: swipe down
-            if (dy >= DISMISS_MIN_Y && Math.abs(dx) < DISMISS_MAX_X) {
-                const p = this._getPlayer();
-                p && p.hideFullPlayer && p.hideFullPlayer();
+            if (!panel) return;
+            panel.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1), opacity 0.3s ease, border-radius 0.3s ease';
+
+            if (currentDy >= THRESHOLD()) {
+                // Dismiss — animate off screen then close
+                panel.style.transform = `translateY(${window.innerHeight}px) scale(0.9)`;
+                panel.style.opacity = '0';
+                setTimeout(() => {
+                    const p = this._getPlayer();
+                    p?.hideFullPlayer?.();
+                    // Reset panel styles for next open
+                    panel.style.transform = '';
+                    panel.style.opacity = '';
+                    panel.style.borderRadius = '';
+                    panel.style.transition = '';
+                }, 320);
+            } else {
+                // Snap back
+                panel.style.transform = '';
+                panel.style.opacity = '';
+                panel.style.borderRadius = '';
             }
+
+            dragging = false;
+            currentDy = 0;
         };
 
-        // Register on elements that don't have conflicting touch handling:
-        // 1. The drag handle (top)
-        // 2. The full player info zone (title, artist, fav button)
-        // 3. The video/album art container
-        const safeZones = [
-            document.getElementById('fullDragHandle'),
-            document.querySelector('.full-player-header'),
-            document.querySelector('.full-player-info'),
-            document.querySelector('.video-container'),
-        ].filter(Boolean);
-
-        // If no safe zones found yet (DOM not ready), fall back to full overlay
-        const targets = safeZones.length > 0 ? safeZones : [fullPlayer];
-
-        targets.forEach(el => {
-            el.addEventListener('touchstart', onStart, { passive: true });
-            el.addEventListener('touchend', onEnd, { passive: true });
-        });
+        // capture:true → fires BEFORE any child element (video, range input, buttons)
+        overlay.addEventListener('touchstart', onStart, { passive: true, capture: true });
+        overlay.addEventListener('touchmove', onMove, { passive: true, capture: true });
+        overlay.addEventListener('touchend', onEnd, { passive: true, capture: true });
     }
 
     /* ─── Page navigation swipe ─── */
