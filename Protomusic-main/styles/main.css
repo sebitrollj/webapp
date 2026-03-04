@@ -3207,6 +3207,45 @@ body.ambient-mode .full-player {
         display: none !important;
     }
 
+    /* ── Hide ^ expand button, show drag handle pill instead ── */
+    #expandPlayerBtn {
+        display: none !important;
+    }
+
+    .mini-drag-handle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── Full player header: pill centered on mobile ── */
+    .full-player-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        padding: 12px 0 4px;
+    }
+
+    .full-player-header .close-player-btn {
+        display: none !important;
+        /* hidden on mobile – use swipe down */
+    }
+
+    .full-drag-handle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 8px 0;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
     /* 11. CRITICAL: Hide mini-player when fullscreen active */
     body:has(.full-player-overlay:not(.hidden)) .mini-player {
         display: none !important;
@@ -4049,4 +4088,33 @@ body.theme-light {
 
 .video-container {
     position: relative;
+}
+
+/* ─── Drag handle pill (shared by mini & full player) ───────────────────── */
+.drag-pill {
+    width: 40px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 99px;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.mini-drag-handle:active .drag-pill,
+.full-drag-handle:active .drag-pill {
+    background: rgba(255, 255, 255, 0.7);
+    transform: scaleX(1.15);
+}
+
+/* hide drag handles on desktop (they're only for mobile) */
+.mini-drag-handle,
+.full-drag-handle {
+    display: none;
+}
+
+/* full-player-header is always present; on desktop just show the close btn */
+.full-player-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0;
 }

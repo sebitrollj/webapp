@@ -33,6 +33,7 @@ class SwipeManager {
     }
 
     _setup() {
+        this._setupDragHandles();
         this._setupMiniPlayer();
         this._setupFullPlayer();
         this._setupPageSwipe();
@@ -86,6 +87,28 @@ class SwipeManager {
     _getCurrentPage() {
         const app = this._getApp();
         return app ? app.currentPage : null;
+    }
+
+    /* ─── Drag Handle pills (tap to open/close) ─── */
+
+    _setupDragHandles() {
+        // Mini player drag handle pill → open full player on tap
+        const miniHandle = document.getElementById('miniDragHandle');
+        if (miniHandle) {
+            miniHandle.addEventListener('click', () => {
+                const p = this._getPlayer();
+                p && p.showFullPlayer && p.showFullPlayer();
+            });
+        }
+
+        // Full player drag handle pill → close full player on tap
+        const fullHandle = document.getElementById('fullDragHandle');
+        if (fullHandle) {
+            fullHandle.addEventListener('click', () => {
+                const p = this._getPlayer();
+                p && p.hideFullPlayer && p.hideFullPlayer();
+            });
+        }
     }
 
     /* ─── Mini Player swipe ─── */

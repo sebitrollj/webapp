@@ -22,7 +22,7 @@
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
     <!-- Styles -->
-    <link rel="stylesheet" href="styles/main.css?v=3">
+    <link rel="stylesheet" href="styles/main.css?v=4">
     <link rel="stylesheet" href="styles/kalandar.css?v=2">
 </head>
 
@@ -685,11 +685,15 @@
                         <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="80">
                     </div>
 
-                    <button class="mini-btn" id="expandPlayerBtn" title="Ouvrir le lecteur">
+                    <button class="mini-btn" id="expandPlayerBtn" title="Ouvrir le lecteur" class="hide-on-mobile">
                         <svg viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z" />
                         </svg>
                     </button>
+                    <!-- Pill drag handle (mobile only) -->
+                    <div class="mini-drag-handle" id="miniDragHandle" title="Tirer vers le haut pour ouvrir">
+                        <div class="drag-pill"></div>
+                    </div>
                     <button class="mini-btn" id="queueBtn" title="File d'attente">
                         <svg viewBox="0 0 24 24" fill="currentColor">
                             <path
@@ -743,11 +747,17 @@
         <!-- Full Player Overlay -->
         <div class="full-player-overlay hidden" id="fullPlayerOverlay">
             <div class="full-player">
-                <button class="close-player-btn" id="closePlayerBtn">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z" />
-                    </svg>
-                </button>
+                <!-- Drag handle (mobile) / Close button (desktop) -->
+                <div class="full-player-header">
+                    <div class="full-drag-handle" id="fullDragHandle">
+                        <div class="drag-pill"></div>
+                    </div>
+                    <button class="close-player-btn" id="closePlayerBtn">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z" />
+                        </svg>
+                    </button>
+                </div>
 
                 <div class="full-player-content">
                     <div class="video-container">
@@ -928,7 +938,7 @@
     <script src="js/player.js?v=4"></script>
     <script src="js/app.js?v=3"></script>
     <script src="js/settings.js?v=2"></script>
-    <script src="js/swipe.js?v=1"></script>
+    <script src="js/swipe.js?v=2"></script>
 </body>
 
 </html>
