@@ -217,27 +217,51 @@ class SwipeManager {
             }
 
             if (!panel) return;
-            panel.style.transition = 'transform 0.3s cubic-bezier(0.32,0.72,0,1), opacity 0.3s ease, border-radius 0.3s ease';
-            overlay.style.transition = 'background-color 0.3s ease';
+            panel.style.transition = 'transform 0.28s cubic-bezier(0.32,0.72,0,1), opacity 0.28s ease, border-radius 0.28s ease';
+            overlay.style.transition = 'background-color 0.28s ease';
 
             if (currentDy >= THRESHOLD()) {
                 // Dismiss — animate panel off screen + fade overlay to transparent
-                panel.style.transform = `translateY(${window.innerHeight}px) scale(0.9)`;
+                panel.style.transform = `translateY(${window.innerHeight}px) scale(0.88)`;
                 panel.style.opacity = '0';
                 overlay.style.backgroundColor = 'rgba(0,0,0,0)';
-                setTimeout(() => {
-                    const p = this._getPlayer();
-                    p?.hideFullPlayer?.();
-                    // Reset all styles for next open
+
+                // Use transitionend for exact timing (no fixed timeout)
+                let dismissed = false;
+                const dismiss = () => {
+                    if (dismissed) return;
+                    dismissed = true;
+
+                    // Reset inline styles BEFORE calling hideFullPlayer
+                    // so that when display:none is removed on next open, styles are clean
+                    panel.style.transition = 'none';
                     panel.style.transform = '';
                     panel.style.opacity = '';
                     panel.style.borderRadius = '';
-                    panel.style.transition = '';
+                    overlay.style.transition = 'none';
                     overlay.style.backgroundColor = '';
-                    overlay.style.transition = '';
-                }, 320);
+
+                    // Now hide via player (adds hidden class, restores body.overflow, etc.)
+                    const p = this._getPlayer();
+                    if (p?.hideFullPlayer) {
+                        p.hideFullPlayer();
+                    } else {
+                        overlay.classList.add('hidden');
+                        document.body.style.overflow = '';
+                    }
+
+                    // Force panel style cleanup on next frame
+                    requestAnimationFrame(() => {
+                        panel.style.transition = '';
+                    });
+                };
+
+                panel.addEventListener('transitionend', dismiss, { once: true });
+                // Fallback: ensure dismiss fires even if transitionend doesn't
+                setTimeout(dismiss, 400);
+
             } else {
-                // Snap back — restore overlay background
+                // Snap back — restore overlay background instantly
                 panel.style.transform = '';
                 panel.style.opacity = '';
                 panel.style.borderRadius = '';
