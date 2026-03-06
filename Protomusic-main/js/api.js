@@ -160,7 +160,13 @@ class ProtoMusicAPI {
                 thumbnailUrl = video.thumbnail;
             } else {
                 // Prepend encoder URL for relative paths via public API access
-                const path = video.thumbnail.startsWith('/') ? video.thumbnail : '/' + video.thumbnail;
+                let path = video.thumbnail.startsWith('/') ? video.thumbnail : '/' + video.thumbnail;
+
+                // Prevent duplicate /webapi/ routes
+                if (path.startsWith('/webapi/')) {
+                    path = path.replace('/webapi/', '/');
+                }
+
                 thumbnailUrl = `${this.encoderUrl}${path}`;
             }
         } else if (video && video.video_id) {
