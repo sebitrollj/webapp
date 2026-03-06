@@ -1,9 +1,9 @@
 /**
  * ProtoMusic API Service - PWA Version
- * Using Render proxy to avoid CORS
+ * Direct connection to v2.protogen.fr (no proxy)
  */
 
-const API_BASE = 'https://protomusic-proxy.onrender.com';
+const API_BASE = 'https://v2.protogen.fr';
 const API_XHR = '/api';
 
 class ProtoMusicAPI {
