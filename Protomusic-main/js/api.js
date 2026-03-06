@@ -4,7 +4,7 @@
  */
 
 const API_BASE = 'https://v2.protogen.fr';
-const API_XHR = '/api';
+const API_XHR = '/sys/XHR';
 
 class ProtoMusicAPI {
     constructor() {
@@ -38,11 +38,11 @@ class ProtoMusicAPI {
     }
 
     async getPublicMedia(limit = 20, offset = 0) {
-        return this.request(`/media/getPublicMedia.php?limit=${limit}&offset=${offset}`);
+        return this.request(`/media/getPublicMedia?limit=${limit}&offset=${offset}`);
     }
 
     async getMostViewedMedia(limit = 8, offset = 0) {
-        return this.request(`/media/getMostViewedMedia.php?limit=${limit}&offset=${offset}`);
+        return this.request(`/media/getMostViewedMedia?limit=${limit}&offset=${offset}`);
     }
 
     async getRandomMedia(limit = 20, exclude = []) {
@@ -65,7 +65,7 @@ class ProtoMusicAPI {
 
     async search(query) {
         try {
-            const result = await this.request(`/search/autocomplete.php?q=${encodeURIComponent(query)}`);
+            const result = await this.request(`/search/autocomplete?q=${encodeURIComponent(query)}`);
             if (result.success && result.videos) return result;
         } catch (error) {
             console.warn('Search API failed');
@@ -149,7 +149,7 @@ class ProtoMusicAPI {
     }
 
     async trackView(videoId) {
-        return this.request('/media/trackView.php');
+        return this.request(`/media/trackView?video_id=${videoId}`);
     }
 
     getThumbnailUrl(videoId) {
