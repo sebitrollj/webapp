@@ -412,7 +412,7 @@ class ProtoMusicPlayer {
 
     // Resolve thumbnail URL: custom → proxy fallback
     _resolveThumbnailUrl(video) {
-        const baseUrl = (window.api && window.api.baseUrl) || 'https://protomusic-proxy.onrender.com';
+        const baseUrl = 'https://v2.protogen.fr/webapi';
         const proxyUrl = api.getThumbnailUrl(video.video_id);
 
         if (video.thumbnail && video.thumbnail.trim() !== '') {
