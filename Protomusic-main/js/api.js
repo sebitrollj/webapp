@@ -3,12 +3,14 @@
  * Direct connection to v2.protogen.fr (no proxy)
  */
 
+const SITE_BASE = 'https://v2.protogen.fr'
 const API_BASE = 'https://v2.protogen.fr/api/'
 const ENCODER_API_BASE = 'https://v2.protogen.fr/webapi'
 
 class ProtoMusicAPI {
     constructor() {
         this.baseUrl = API_BASE;
+        this.siteUrl = SITE_BASE;
         this.encoderUrl = ENCODER_API_BASE;
     }
 
@@ -161,13 +163,7 @@ class ProtoMusicAPI {
             } else {
                 // Prepend encoder URL for relative paths via public API access
                 let path = video.thumbnail.startsWith('/') ? video.thumbnail : '/' + video.thumbnail;
-
-                // Prevent duplicate /webapi/ routes
-                if (path.startsWith('/webapi/')) {
-                    path = path.replace('/webapi/', '/');
-                }
-
-                thumbnailUrl = `${this.encoderUrl}${path}`;
+                thumbnailUrl = `${this.siteUrl}${path}`;
             }
         } else if (video && video.video_id) {
             // Fallback to proxy generated thumbnail
