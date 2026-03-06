@@ -445,18 +445,9 @@ class ProtoMusicApp {
         // Always use proxy for thumbnails
         const thumbnailUrl = api.getThumbnailUrl(video.video_id);
 
-        // Determine custom thumbnail if available
-        let customThumbUrl = null;
-        if (video.thumbnail && video.thumbnail.trim() !== '') {
-            if (video.thumbnail.startsWith('http')) {
-                customThumbUrl = video.thumbnail;
-            } else {
-                const baseUrl = 'https://v2.protogen.fr/webapi';
-                const path = video.thumbnail.startsWith('/') ? video.thumbnail : '/' + video.thumbnail;
-                customThumbUrl = `${baseUrl}${path}`;
-            }
-        }
-        const displayThumb = customThumbUrl || thumbnailUrl;
+        // Determine custom thumbnail if available (fallback applied via api logic)
+        const displayThumb = api.resolveThumbnail(video);
+        let customThumbUrl = (video.thumbnail && video.thumbnail.trim() !== '') ? displayThumb : null;
 
         if (thumbnail) {
             thumbnail.style.backgroundImage = `url(${displayThumb})`;
@@ -940,21 +931,8 @@ class ProtoMusicApp {
         const duration = video.duration || '0:00';
         const views = video.views ? `${video.views} vues` : '';
 
-        // Determine thumbnail URL: Prefer manual/API provided thumbnail, fallback to auto
-        let thumbnailUrl;
-        if (video.thumbnail && video.thumbnail.trim() !== '') {
-            if (video.thumbnail.startsWith('http')) {
-                thumbnailUrl = video.thumbnail;
-            } else {
-                // Prepend base URL for relative paths via public API access
-                const baseUrl = (window.api && window.api.encoderUrl) || 'https://v2.protogen.fr/webapi';
-                const path = video.thumbnail.startsWith('/') ? video.thumbnail : '/' + video.thumbnail;
-                thumbnailUrl = `${baseUrl}${path}`;
-            }
-        } else {
-            // Fallback to proxy generated thumbnail
-            thumbnailUrl = api.getThumbnailUrl(video.video_id);
-        }
+        // Determine thumbnail URL: Let api.js handle the resolution and fallback logic
+        let thumbnailUrl = api.resolveThumbnail(video);
 
         card.innerHTML = `
             <div class="video-thumbnail">

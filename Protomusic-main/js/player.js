@@ -412,18 +412,7 @@ class ProtoMusicPlayer {
 
     // Resolve thumbnail URL: custom → proxy fallback
     _resolveThumbnailUrl(video) {
-        const baseUrl = 'https://v2.protogen.fr/webapi';
-        const proxyUrl = api.getThumbnailUrl(video.video_id);
-
-        if (video.thumbnail && video.thumbnail.trim() !== '') {
-            if (video.thumbnail.startsWith('http')) {
-                return video.thumbnail;
-            } else {
-                const path = video.thumbnail.startsWith('/') ? video.thumbnail : '/' + video.thumbnail;
-                return `${baseUrl}${path}`;
-            }
-        }
-        return proxyUrl;
+        return api.resolveThumbnail(video);
     }
 
     async applyAmbientBackground(imageUrl) {

@@ -153,27 +153,34 @@ class ProtoMusicAPI {
         return this.request(`/media/trackView?video_id=${videoId}`);
     }
 
-    getThumbnailUrl(videoId) {
-        // if for some reason there is a "https://v2.protogen.fr/api/" in the url, remove it
-        if (this.encoderUrl.startsWith('https://v2.protogen.fr/api/')) {
-            this.encoderUrl = this.encoderUrl.replace('https://v2.protogen.fr/api/', '');
+    resolveThumbnail(video) {
+        let thumbnailUrl;
+        if (video && video.thumbnail && video.thumbnail.trim() !== '') {
+            if (video.thumbnail.startsWith('http')) {
+                thumbnailUrl = video.thumbnail;
+            } else {
+                // Prepend encoder URL for relative paths via public API access
+                const path = video.thumbnail.startsWith('/') ? video.thumbnail : '/' + video.thumbnail;
+                thumbnailUrl = `${this.encoderUrl}${path}`;
+            }
+        } else if (video && video.video_id) {
+            // Fallback to proxy generated thumbnail
+            thumbnailUrl = this.getThumbnailUrl(video.video_id);
+        } else {
+            thumbnailUrl = ''; // Default empty fallback
         }
+        return thumbnailUrl;
+    }
+
+    getThumbnailUrl(videoId) {
         return `${this.encoderUrl}/media/thumb/${videoId}`;
     }
 
     getStreamUrl(videoId) {
-        // if for some reason there is a "https://v2.protogen.fr/api/" in the url, remove it
-        if (this.encoderUrl.startsWith('https://v2.protogen.fr/api/')) {
-            this.encoderUrl = this.encoderUrl.replace('https://v2.protogen.fr/api/', '');
-        }
         return `${this.encoderUrl}/media/stream/${videoId}/master.m3u8`;
     }
 
     getDirectUrl(videoId) {
-        // if for some reason there is a "https://v2.protogen.fr/api/" in the url, remove it
-        if (this.encoderUrl.startsWith('https://v2.protogen.fr/api/')) {
-            this.encoderUrl = this.encoderUrl.replace('https://v2.protogen.fr/api/', '');
-        }
         return `${this.encoderUrl}/media/video/${videoId}`;
     }
 }
