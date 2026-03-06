@@ -3,8 +3,7 @@
  * Direct connection to v2.protogen.fr (no proxy)
  */
 
-const API_BASE = 'https://v2.protogen.fr';
-const API_XHR = '/sys/XHR';
+const API_BASE = 'https://v2.protogen.fr/api/'
 
 class ProtoMusicAPI {
     constructor() {
@@ -13,8 +12,7 @@ class ProtoMusicAPI {
 
     async request(endpoint, options = {}) {
         try {
-            const url = endpoint.startsWith('http') ? endpoint : `${API_XHR}${endpoint}`;
-            const fullUrl = `${this.baseUrl}${url}`;
+            const fullUrl = `${this.baseUrl}${endpoint}`;
 
             console.log('[API] Request:', fullUrl);
 
@@ -75,7 +73,7 @@ class ProtoMusicAPI {
 
     async getSeries() {
         try {
-            const response = await fetch(`${this.baseUrl}/kikiskothek-api/`); // Updated endpoint
+            const response = await this.request(`/kikiskothek/getSeasons`);
             const data = await response.json();
 
             if (data && data.success && data.seasons && data.seasons.length > 0) {
