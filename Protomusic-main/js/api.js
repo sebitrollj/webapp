@@ -9,6 +9,7 @@ const ENCODER_API_BASE = 'https://v2.protogen.fr/webapi'
 class ProtoMusicAPI {
     constructor() {
         this.baseUrl = API_BASE;
+        this.encoderUrl = ENCODER_API_BASE;
     }
 
     async request(endpoint, options = {}) {
@@ -153,15 +154,27 @@ class ProtoMusicAPI {
     }
 
     getThumbnailUrl(videoId) {
-        return `${this.ENCODER_API_BASE}/media/thumb/${videoId}`;
+        // if for some reason there is a "https://v2.protogen.fr/api/" in the url, remove it
+        if (this.encoderUrl.startsWith('https://v2.protogen.fr/api/')) {
+            this.encoderUrl = this.encoderUrl.replace('https://v2.protogen.fr/api/', '');
+        }
+        return `${this.encoderUrl}/media/thumb/${videoId}`;
     }
 
     getStreamUrl(videoId) {
-        return `${this.ENCODER_API_BASE}/media/stream/${videoId}/master.m3u8`;
+        // if for some reason there is a "https://v2.protogen.fr/api/" in the url, remove it
+        if (this.encoderUrl.startsWith('https://v2.protogen.fr/api/')) {
+            this.encoderUrl = this.encoderUrl.replace('https://v2.protogen.fr/api/', '');
+        }
+        return `${this.encoderUrl}/media/stream/${videoId}/master.m3u8`;
     }
 
     getDirectUrl(videoId) {
-        return `${this.ENCODER_API_BASE}/media/video/${videoId}`;
+        // if for some reason there is a "https://v2.protogen.fr/api/" in the url, remove it
+        if (this.encoderUrl.startsWith('https://v2.protogen.fr/api/')) {
+            this.encoderUrl = this.encoderUrl.replace('https://v2.protogen.fr/api/', '');
+        }
+        return `${this.encoderUrl}/media/video/${videoId}`;
     }
 }
 
