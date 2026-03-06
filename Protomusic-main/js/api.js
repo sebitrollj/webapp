@@ -4,6 +4,7 @@
  */
 
 const API_BASE = 'https://v2.protogen.fr/api/'
+const ENCODER_API_BASE = 'https://v2.protogen.fr/webapi'
 
 class ProtoMusicAPI {
     constructor() {
@@ -152,15 +153,15 @@ class ProtoMusicAPI {
     }
 
     getThumbnailUrl(videoId) {
-        return `${this.baseUrl}/webapi/media/thumb/${videoId}`;
+        return `${this.ENCODER_API_BASE}/media/thumb/${videoId}`;
     }
 
     getStreamUrl(videoId) {
-        return `${this.baseUrl}/webapi/media/stream/${videoId}/master.m3u8`;
+        return `${this.ENCODER_API_BASE}/media/stream/${videoId}/master.m3u8`;
     }
 
     getDirectUrl(videoId) {
-        return `${this.baseUrl}/webapi/media/video/${videoId}`;
+        return `${this.ENCODER_API_BASE}/media/video/${videoId}`;
     }
 }
 
