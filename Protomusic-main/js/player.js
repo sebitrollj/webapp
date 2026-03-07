@@ -20,6 +20,9 @@ class ProtoMusicPlayer {
         this.bassFilter = null;
         this.bassGain = 0;
 
+        // RAF throttle for timeupdate (avoid 60 DOM writes/sec)
+        this._rafPending = false;
+
         // Discord Rich Presence (will be initialized in main process)
         this.discordEnabled = localStorage.getItem('protomusic_discord_rpc') !== 'false';
 
@@ -95,8 +98,15 @@ class ProtoMusicPlayer {
             });
         }
 
-        // Video events
-        this.video.addEventListener('timeupdate', () => this.updateProgress());
+        // Video events — timeupdate throttled via RAF to avoid 60 DOM writes/sec
+        this.video.addEventListener('timeupdate', () => {
+            if (this._rafPending) return;
+            this._rafPending = true;
+            requestAnimationFrame(() => {
+                this._rafPending = false;
+                this.updateProgress();
+            });
+        });
         this.video.addEventListener('loadedmetadata', () => this.onMetadataLoaded());
         this.video.addEventListener('ended', () => this.onEnded());
         this.video.addEventListener('play', () => this.onPlay());
@@ -318,9 +328,12 @@ class ProtoMusicPlayer {
 
         // Try HLS
         if (window.Hls && Hls.isSupported()) {
+            // Adapt buffer size: smaller on mobile to save RAM
+            const isMobile = window.innerWidth <= 768;
             this.hls = new Hls({
-                maxBufferLength: 30,
-                maxMaxBufferLength: 60
+                maxBufferLength: isMobile ? 10 : 30,
+                maxMaxBufferLength: isMobile ? 20 : 60,
+                startLevel: -1, // Auto quality
             });
 
             this.hls.loadSource(streamUrl);

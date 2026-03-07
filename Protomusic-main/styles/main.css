@@ -2,6 +2,65 @@
    ProtoMusic Desktop - YouTube Music Style
    ============================================ */
 
+/* ============================================
+   Performance: GPU Compositing & Containment
+   ============================================ */
+
+/* Force GPU layers on elements that animate or transform */
+.mini-player {
+    will-change: transform;
+    transform: translateZ(0);
+    /* Create stacking context on GPU */
+}
+
+.full-player-overlay {
+    will-change: opacity, transform;
+}
+
+.full-player {
+    will-change: transform, opacity;
+}
+
+.queue-panel {
+    will-change: transform;
+}
+
+.video-card {
+    will-change: transform, box-shadow;
+    contain: layout style;
+    /* Isolate each card's layout — a card's reflow won't cascade to parents */
+}
+
+.season-card {
+    will-change: transform, box-shadow;
+    contain: layout style;
+}
+
+/* Contain each content section: its internal changes don't reflow the whole page */
+/* Note: avoid 'paint' containment — it clips position:fixed children (context menus) */
+.content-section {
+    contain: layout style;
+}
+
+/* Prevent overscroll chaining on scrollable containers (especially mobile) */
+.page-container {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.queue-upcoming,
+.sidebar {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Thumbnail images — let browser pick optimal filtering */
+.video-thumbnail img {
+    image-rendering: auto;
+    /* Placeholder bg while lazy-loading (prevents white flash) */
+    background: var(--bg-tertiary);
+}
+
 /* CSS Variables */
 :root {
     /* Colors - YouTube Music Inspired */

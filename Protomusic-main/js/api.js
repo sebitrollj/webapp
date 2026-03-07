@@ -1,6 +1,7 @@
 /**
  * ProtoMusic API Service - PWA Version
  * Direct connection to v2.protogen.fr (no proxy)
+ * Optimized: request deduplication + in-memory cache with TTL
  */
 
 const SITE_BASE = 'https://v2.protogen.fr'
@@ -12,31 +13,71 @@ class ProtoMusicAPI {
         this.baseUrl = API_BASE;
         this.siteUrl = SITE_BASE;
         this.encoderUrl = ENCODER_API_BASE;
+
+        // In-flight request deduplication: url → Promise
+        this._inflight = new Map();
+
+        // In-memory response cache: url → { data, expiry }
+        this._cache = new Map();
+        this._cacheTTL = 5 * 60 * 1000; // 5 minutes
     }
 
-    async request(endpoint, options = {}) {
-        try {
-            const fullUrl = `${this.baseUrl}${endpoint}`;
+    /**
+     * Cached + deduplicated fetch.
+     * @param {string} endpoint - relative to baseUrl
+     * @param {object} options  - fetch options (optional)
+     * @param {boolean} cached  - whether to use the memory cache (default true)
+     */
+    async request(endpoint, options = {}, cached = true) {
+        const fullUrl = `${this.baseUrl}${endpoint}`;
 
-            console.log('[API] Request:', fullUrl);
+        // 1. Serve from in-memory cache if still fresh
+        if (cached && !options.method || options.method === 'GET') {
+            const hit = this._cache.get(fullUrl);
+            if (hit && Date.now() < hit.expiry) {
+                return hit.data;
+            }
+        }
 
-            const response = await fetch(fullUrl, {
-                ...options,
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                }
-            });
+        // 2. Deduplicate in-flight requests to the same URL
+        if (this._inflight.has(fullUrl)) {
+            return this._inflight.get(fullUrl);
+        }
 
+        const fetchPromise = fetch(fullUrl, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        }).then(async (response) => {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
+            const data = await response.json();
 
-            return await response.json();
-        } catch (error) {
-            console.error('API Error:', error);
+            // Store in cache for cacheable GET requests
+            if (cached && (!options.method || options.method === 'GET')) {
+                this._cache.set(fullUrl, { data, expiry: Date.now() + this._cacheTTL });
+            }
+
+            return data;
+        }).catch(error => {
+            console.error('[API] Error:', error.message);
             throw error;
-        }
+        }).finally(() => {
+            this._inflight.delete(fullUrl);
+        });
+
+        this._inflight.set(fullUrl, fetchPromise);
+        return fetchPromise;
+    }
+
+    /** Bypass cache explicitly (for user-triggered refreshes) */
+    async requestFresh(endpoint, options = {}) {
+        const fullUrl = `${this.baseUrl}${endpoint}`;
+        this._cache.delete(fullUrl);
+        return this.request(endpoint, options, false);
     }
 
     async getPublicMedia(limit = 20, offset = 0) {
@@ -67,7 +108,7 @@ class ProtoMusicAPI {
 
     async search(query) {
         try {
-            const result = await this.request(`/search/autocomplete?q=${encodeURIComponent(query)}`);
+            const result = await this.request(`/search/autocomplete?q=${encodeURIComponent(query)}`, {}, false);
             if (result.success && result.videos) return result;
         } catch (error) {
             console.warn('Search API failed');
@@ -88,18 +129,14 @@ class ProtoMusicAPI {
                     description: season.description || ''
                 }));
 
-                // Ensure Kalandar is always available in the UI even if the API seasons list doesn't include it
+                // Ensure Kalandar is always available in the UI
                 if (!seriesList.some(s => s.series_id === 'kalandar')) {
                     seriesList.push({ series_id: 'kalandar', season_name: 'Kalandar', episode_count: 25 });
                 }
 
-                return {
-                    success: true,
-                    series: seriesList
-                };
+                return { success: true, series: seriesList };
             }
 
-            // Fallback to hardcoded if API fails
             return this.getFallbackSeasons();
         } catch (error) {
             console.warn('Failed to fetch seasons from API:', error);
@@ -152,26 +189,22 @@ class ProtoMusicAPI {
     }
 
     async trackView(videoId) {
-        return this.request(`/media/trackView?video_id=${videoId}`);
+        // Track views without caching and without blocking UI (fire-and-forget)
+        return this.request(`/media/trackView?video_id=${videoId}`, {}, false);
     }
 
     resolveThumbnail(video) {
-        let thumbnailUrl;
         if (video && video.thumbnail && video.thumbnail.trim() !== '') {
             if (video.thumbnail.startsWith('http')) {
-                thumbnailUrl = video.thumbnail;
-            } else {
-                // Prepend encoder URL for relative paths via public API access
-                let path = video.thumbnail.startsWith('/') ? video.thumbnail : '/' + video.thumbnail;
-                thumbnailUrl = `${this.siteUrl}${path}`;
+                return video.thumbnail;
             }
-        } else if (video && video.video_id) {
-            // Fallback to proxy generated thumbnail
-            thumbnailUrl = this.getThumbnailUrl(video.video_id);
-        } else {
-            thumbnailUrl = ''; // Default empty fallback
+            const path = video.thumbnail.startsWith('/') ? video.thumbnail : '/' + video.thumbnail;
+            return `${this.siteUrl}${path}`;
         }
-        return thumbnailUrl;
+        if (video && video.video_id) {
+            return this.getThumbnailUrl(video.video_id);
+        }
+        return '';
     }
 
     getThumbnailUrl(videoId) {

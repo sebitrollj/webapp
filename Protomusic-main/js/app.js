@@ -20,6 +20,23 @@ class ProtoMusicApp {
         this.contextMenu = null;
         this.contextMenuVideo = null;
         this.viewMode = localStorage.getItem('season-view-mode') || 'large'; // Grid view mode
+        this._homePageCache = null; // Cache home page data to avoid redundant fetches
+
+        // Singleton IntersectionObserver for lazy-loading thumbnails
+        this._lazyObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                const img = entry.target.querySelector('img[data-src]');
+                if (img) {
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                }
+                this._lazyObserver.unobserve(entry.target);
+            });
+        }, {
+            rootMargin: '300px 0px', // Start loading 300px before entering view
+            threshold: 0
+        });
 
         this.init();
     }
@@ -936,13 +953,13 @@ class ProtoMusicApp {
 
         card.innerHTML = `
             <div class="video-thumbnail">
-                <img src="${thumbnailUrl}" alt="" loading="lazy"
+                <img src="" data-src="${thumbnailUrl}" alt="" loading="lazy"
                     data-fallback-url="${api.getThumbnailUrl(video.video_id)}"
                     data-original-url="${thumbnailUrl}"
                     onerror="
                         const fb = this.getAttribute('data-fallback-url');
-                        const orig = this.getAttribute('data-original-url');
-                        if (fb && this.src !== fb) {
+                        if (fb && this.src !== fb && !this.dataset.triedFallback) {
+                            this.dataset.triedFallback = '1';
                             this.src = fb;
                         } else {
                             this.onerror=null;
@@ -968,6 +985,9 @@ class ProtoMusicApp {
                 </svg>
             </button>
         `;
+
+        // Register card with the singleton IntersectionObserver for lazy image loading
+        this._lazyObserver.observe(card);
 
         // Favorite button
         const favoriteBtn = card.querySelector('.favorite-btn');
